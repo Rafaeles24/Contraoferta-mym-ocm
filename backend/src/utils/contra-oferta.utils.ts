@@ -9,13 +9,7 @@ export function calcularDataNextCall(
   llamarDentroDe: LlamarDentroDe,
 ): string {
   const minutos: Record<LlamarDentroDe, number> = {
-    [LlamarDentroDe.AHORA]: 0,
-    [LlamarDentroDe.DOS_MINUTOS]: 2,
-    [LlamarDentroDe.CINCO_MINUTOS]: 5,
-    [LlamarDentroDe.QUINCE_MINUTOS]: 15,
     [LlamarDentroDe.TREINTA_MINUTOS]: 30,
-    [LlamarDentroDe.UNA_HORA]: 60,
-    [LlamarDentroDe.DOS_HORAS]: 120,
   };
 
   const cantidad = minutos[llamarDentroDe];

@@ -1,13 +1,12 @@
-
 "use client";
 
 import { useState, type FormEvent } from "react";
+
 import {
   FileText,
   Info,
   Users,
   UserRound,
-  UserRoundCheck,
   Phone,
   RadioTower,
   Megaphone,
@@ -17,12 +16,12 @@ import {
   AlertTriangle,
   Tag,
   MessageSquareText,
-  X,
   Send,
   Clock3,
 } from "lucide-react";
 
 import styles from "./ui.module.css";
+
 import { SolicitudComercial } from "@/types/form";
 import { crearContraOferta } from "@/services/contraOferta.service";
 
@@ -39,14 +38,17 @@ const formularioVacio: SolicitudComercial = {
   paga: "",
   direccion: "",
   cantidad_moviles: 0,
-  llamar_dentro_de: "",
+
+  // Tiempo fijo para todas las solicitudes
+  llamar_dentro_de: "30_MINUTOS",
+
   contraoferta: "",
 };
 
 export default function SolicitudComercialUI() {
-  const [form, setForm] = useState<SolicitudComercial>(
-    () => ({ ...formularioVacio })
-  );
+  const [form, setForm] = useState<SolicitudComercial>(() => ({
+    ...formularioVacio,
+  }));
 
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState("");
@@ -60,13 +62,14 @@ export default function SolicitudComercialUI() {
       ...prev,
       [campo]: valor,
     }));
+
     setError("");
   };
 
   const enviar = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    //Funcion para evitar que se envien varias veces el mismo form cuando ya se esta enviando una.
+    // Evita que se envíe varias veces el mismo formulario
     if (enviando) return;
 
     setError("");
@@ -92,7 +95,7 @@ export default function SolicitudComercialUI() {
     ) {
       setError("La cantidad de móviles debe ser mayor a cero.");
       return;
-    }    
+    }
 
     setEnviando(true);
 
@@ -106,13 +109,25 @@ export default function SolicitudComercialUI() {
 
       console.log("Respuesta de OCM:", resultado);
 
-      setMensaje("Contraoferta enviado a OCM correctamente.");
+      setMensaje("Contraoferta enviada a OCM correctamente.");
 
-      setForm({...formularioVacio});
-
+      setForm({
+        ...formularioVacio,
+      });
     } catch (error) {
-      console.error(`error al enviar contraoferta: ${error instanceof Error ? error.message : "No se pudo enviar la contraoferta"}`);
-      setError(error instanceof Error ? error.message : "No se pudo enviar la contraoferta");
+      console.error(
+        `error al enviar contraoferta: ${
+          error instanceof Error
+            ? error.message
+            : "No se pudo enviar la contraoferta"
+        }`
+      );
+
+      setError(
+        error instanceof Error
+          ? error.message
+          : "No se pudo enviar la contraoferta"
+      );
     } finally {
       setEnviando(false);
     }
@@ -148,7 +163,7 @@ export default function SolicitudComercialUI() {
               <option value="" disabled>
                 Seleccionar...
               </option>
-            
+
               {options.map((option) => (
                 <option key={option} value={option}>
                   {option.replaceAll("_", " ")}
@@ -176,8 +191,16 @@ export default function SolicitudComercialUI() {
               }
               min={name === "cantidad_moviles" ? 1 : undefined}
               step={name === "paga" ? "0.01" : undefined}
-              inputMode={name === "movil_contacto" ? "numeric" : undefined}
-              maxLength={name === "movil_contacto" ? 9 : undefined}
+              inputMode={
+                name === "movil_contacto"
+                  ? "numeric"
+                  : undefined
+              }
+              maxLength={
+                name === "movil_contacto"
+                  ? 9
+                  : undefined
+              }
               required
             />
           )}
@@ -188,7 +211,10 @@ export default function SolicitudComercialUI() {
 
   return (
     <main className={styles.page}>
-      <form className={styles.formCard} onSubmit={enviar}>
+      <form
+        className={styles.formCard}
+        onSubmit={enviar}
+      >
         {/* ENCABEZADO */}
         <header className={styles.header}>
           <div className={styles.headerIcon}>
@@ -197,20 +223,39 @@ export default function SolicitudComercialUI() {
 
           <div className={styles.headerText}>
             <h1>Solicitud a OCM</h1>
+
             <p>
-              Complete la información de la solicitud y datos del cliente
+              Complete la información de la solicitud y
+              datos del cliente
             </p>
           </div>
         </header>
 
         {/* INFORMACIÓN GENERAL */}
-        <section className={`${styles.section} ${styles.blue}`}>
+        <section
+          className={`${styles.section} ${styles.blue}`}
+        >
           <div className={styles.sectionHeader}>
             <Info size={20} />
             <h2>Información general</h2>
           </div>
 
           <div className={styles.sectionBody}>
+            {/* EQUIPO ASIGNADO AHORA APARECE PRIMERO */}
+            <div className={styles.gridTwo}>
+              {campo(
+                "Coordinador / Supervisor",
+                "nombre_coordinador_supervisor",
+                <Users size={19} />
+              )}
+
+              {campo(
+                "Asesor",
+                "nombre_asesor",
+                <UserRound size={19} />
+              )}
+            </div>
+
             <div className={styles.gridThree}>
               {campo(
                 "Solicitado por",
@@ -222,7 +267,12 @@ export default function SolicitudComercialUI() {
                 "Prioridad",
                 "prioridad",
                 <AlertTriangle size={19} />,
-                ["BAJA", "MEDIA", "ALTA", "URGENTE"]
+                [
+                  "BAJA",
+                  "MEDIA",
+                  "ALTA",
+                  "URGENTE",
+                ]
               )}
 
               {campo(
@@ -238,38 +288,36 @@ export default function SolicitudComercialUI() {
               )}
             </div>
 
+            {/* TIEMPO FIJO */}
             <div className={styles.reminderRow}>
               <div className={styles.reminderLabel}>
                 <Clock3 size={18} />
+
                 <span>Tiempo para llamar</span>
               </div>
 
-              <select
-                id="llamar_dentro_de"
-                name="llamar_dentro_de"
-                value={form.llamar_dentro_de}
-                onChange={(e) =>
-                  actualizar("llamar_dentro_de", e.target.value)
-                }
-                required
-              >
-                <option value="" disabled>
-                  Seleccionar tiempo...
-                </option>
-                <option value="AHORA">Ahora</option>
-                <option value="2_MINUTOS">2 minutos</option>
-                <option value="3_MINUTOS">3 minutos</option>
-                <option value="15_MINUTOS">15 minutos</option>
-                <option value="30_MINUTOS">30 minutos</option>
-                <option value="1_HORA">1 hora</option>
-                <option value="2_HORAS">2 horas</option>
-              </select>
+              <div className={styles.inputWrap}>
+                <span className={styles.inputIcon}>
+                  <Clock3 size={18} />
+                </span>
+
+                <input
+                  id="llamar_dentro_de"
+                  name="llamar_dentro_de"
+                  type="text"
+                  value="30 minutos"
+                  readOnly
+                  aria-readonly="true"
+                />
+              </div>
             </div>
           </div>
         </section>
 
         {/* DATOS DEL CLIENTE */}
-        <section className={`${styles.section} ${styles.blue}`}>
+        <section
+          className={`${styles.section} ${styles.blue}`}
+        >
           <div className={styles.sectionHeader}>
             <Users size={20} />
             <h2>Datos del cliente</h2>
@@ -335,41 +383,23 @@ export default function SolicitudComercialUI() {
           </div>
         </section>
 
-        {/* EQUIPO ASIGNADO */}
-        <section className={`${styles.section} ${styles.green}`}>
-          <div className={styles.sectionHeader}>
-            <UserRoundCheck size={20} />
-            <h2>Equipo asignado</h2>
-          </div>
-
-          <div className={styles.sectionBody}>
-            <div className={styles.gridTwo}>
-              {campo(
-                "Coordinador / Supervisor",
-                "nombre_coordinador_supervisor",
-                <Users size={19} />
-              )}
-
-              {campo(
-                "Asesor",
-                "nombre_asesor",
-                <UserRound size={19} />
-              )}
-            </div>
-          </div>
-        </section>
-
         {/* CONTRAOFERTA */}
-        <section className={`${styles.section} ${styles.purple}`}>
+        <section
+          className={`${styles.section} ${styles.purple}`}
+        >
           <div className={styles.sectionHeader}>
             <MessageSquareText size={20} />
+
             <h2>Contraoferta / Observaciones</h2>
           </div>
 
           <div className={styles.sectionBody}>
             <div className={styles.field}>
               <label htmlFor="contraoferta">
-                Contraoferta <span className={styles.required}>*</span>
+                Contraoferta{" "}
+                <span className={styles.required}>
+                  *
+                </span>
               </label>
 
               <textarea
@@ -378,7 +408,10 @@ export default function SolicitudComercialUI() {
                 rows={3}
                 value={form.contraoferta}
                 onChange={(e) =>
-                  actualizar("contraoferta", e.target.value)
+                  actualizar(
+                    "contraoferta",
+                    e.target.value
+                  )
                 }
                 required
               />
@@ -387,13 +420,19 @@ export default function SolicitudComercialUI() {
         </section>
 
         {error && (
-          <p className={styles.error} role="alert">
+          <p
+            className={styles.error}
+            role="alert"
+          >
             {error}
           </p>
         )}
 
         {mensaje && (
-          <div className={styles.success} role="status">
+          <div
+            className={styles.success}
+            role="status"
+          >
             {mensaje}
           </div>
         )}
@@ -406,7 +445,10 @@ export default function SolicitudComercialUI() {
             disabled={enviando}
           >
             <Send size={19} />
-            {enviando ? "Enviando..." : "Enviar"}
+
+            {enviando
+              ? "Enviando..."
+              : "Enviar"}
           </button>
         </footer>
       </form>
