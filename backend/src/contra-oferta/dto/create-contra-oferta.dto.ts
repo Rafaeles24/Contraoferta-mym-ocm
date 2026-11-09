@@ -16,7 +16,10 @@ export enum EstadoComercial {
 }
 
 export enum LlamarDentroDe {
+  DOS_MINUTOS = '2_MINUTOS',
   TREINTA_MINUTOS = '30_MINUTOS',
+  UNA_HORA = '1_HORA',
+  DOS_HORAS = '2_HORAS',
 }
 
 

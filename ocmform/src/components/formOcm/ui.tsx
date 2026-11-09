@@ -288,28 +288,26 @@ export default function SolicitudComercialUI() {
               )}
             </div>
 
-            {/* TIEMPO FIJO */}
+            {/* TIEMPO PARA LLAMAR */}
             <div className={styles.reminderRow}>
               <div className={styles.reminderLabel}>
                 <Clock3 size={18} />
-
                 <span>Tiempo para llamar</span>
               </div>
-
-              <div className={styles.inputWrap}>
-                <span className={styles.inputIcon}>
-                  <Clock3 size={18} />
-                </span>
-
-                <input
-                  id="llamar_dentro_de"
-                  name="llamar_dentro_de"
-                  type="text"
-                  value="30 minutos"
-                  readOnly
-                  aria-readonly="true"
-                />
-              </div>
+                        
+              <select
+                id="llamar_dentro_de"
+                name="llamar_dentro_de"
+                value={form.llamar_dentro_de}
+                onChange={(e) =>
+                  actualizar("llamar_dentro_de", e.target.value)
+                }
+                required
+              >
+                <option value="30_MINUTOS">30 minutos</option>
+                <option value="1_HORA">1 hora</option>
+                <option value="2_HORAS">2 horas</option>
+              </select>
             </div>
           </div>
         </section>
